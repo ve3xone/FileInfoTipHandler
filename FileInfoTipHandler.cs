@@ -44,10 +44,10 @@ namespace FolderInfoTipHandler
                         return string.Format(/*singleLine*/proverka(Path.GetFullPath(SelectedItemPath)) + "Date created: " + File.GetCreationTime(Path.GetFullPath(SelectedItemPath)) + "\nSize: " + sizeConver(Path.GetFullPath(SelectedItemPath)) + "\nDIEC: \n" + process.StandardOutput.ReadToEnd());
                     }
 
-                case RequestedInfoType.Name:
+                /*case RequestedInfoType.Name:
                     
                     //  Return the name of the folder.
-                    return string.Format("Folder '{0}'", Path.GetFileName(SelectedItemPath));
+                    return string.Format("Folder '{0}'", Path.GetFileName(SelectedItemPath));*/
                     
                 default:
 
