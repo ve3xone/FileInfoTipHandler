@@ -5,6 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
+using System.Windows.Forms;
 using SharpShell.Attributes;
 using SharpShell;
 using SharpShell.SharpInfoTipHandler;
@@ -16,7 +18,7 @@ namespace FolderInfoTipHandler
     /// for folders that shows the number of items in the folder.
     /// </summary>
     [ComVisible(true)]
-    [COMServerAssociation(AssociationType.ClassOfExtension, ".exe", ".dll", ".sys")]
+    [COMServerAssociation(AssociationType.ClassOfExtension, ".exe", ".dll", ".sys", ".msi", ".apk")]
     public class FileInfoTipHandler : SharpInfoTipHandler
     {
         /// <summary>
@@ -33,28 +35,68 @@ namespace FolderInfoTipHandler
             switch (infoType)
             {
                 case RequestedInfoType.InfoTip:
-                    using (Process process = Process.Start(new ProcessStartInfo {
-                               FileName = "E:\\Apps\\retoolkit\\die\\diec.exe",
-                               Arguments = $"\"{Path.GetFullPath(SelectedItemPath)}\"",
-                               UseShellExecute = false,
-                               CreateNoWindow = true,
-                               RedirectStandardOutput = true
-                           })){
-                        //  Format the formatted info tip.
-                        return string.Format(/*singleLine*/proverka(Path.GetFullPath(SelectedItemPath)) + "Date created: " + File.GetCreationTime(Path.GetFullPath(SelectedItemPath)) + "\nSize: " + sizeConver(Path.GetFullPath(SelectedItemPath)) + "\nDIEC: \n" + process.StandardOutput.ReadToEnd());
+                    if (Path.GetExtension(SelectedItemPath) == ".exe" ||
+                        Path.GetExtension(SelectedItemPath) == ".dll " ||
+                        Path.GetExtension(SelectedItemPath) == ".sys" ||
+                        Path.GetExtension(SelectedItemPath) == ".msi")
+                    {
+
+
+                        using (Process process = Process.Start(new ProcessStartInfo
+                               {
+                                   FileName = "E:\\Apps\\retoolkit\\die\\diec.exe",
+                                   Arguments = $"\"{Path.GetFullPath(SelectedItemPath)}\"",
+                                   UseShellExecute = false,
+                                   CreateNoWindow = true,
+                                   RedirectStandardOutput = true
+                               }))
+                        {
+
+                            //MessageBox.Show();
+                            //  Format the formatted info tip.
+                            return string.Format( /*singleLine*/proverka(Path.GetFullPath(SelectedItemPath)) +
+                                                                "Date created: " + File.GetCreationTime(Path.GetFullPath(SelectedItemPath)) + "\n" +
+                                                                "Size: " + sizeConver(Path.GetFullPath(SelectedItemPath)) + "\n" +
+                                                                process.StandardOutput.ReadToEnd());
+                        }
+                    }
+                    else if (Path.GetExtension(SelectedItemPath) == ".apk")
+                    {
+                        using (Process process = Process.Start(new ProcessStartInfo
+                               {
+                                   FileName = @"E:\Apps\xapkdetector\xapkdc.exe",
+                                   Arguments = $"\"{Path.GetFullPath(SelectedItemPath)}\"",
+                                   UseShellExecute = false,
+                                   CreateNoWindow = true,
+                                   RedirectStandardOutput = true
+                               }))
+                        {
+
+                            //MessageBox.Show();
+                            //  Format the formatted info tip.
+                            return string.Format( /*singleLine*/"Date created: " + File.GetCreationTime(Path.GetFullPath(SelectedItemPath)) + "\n" +
+                                                                "Size: " + sizeConver(Path.GetFullPath(SelectedItemPath)) + "\n" +
+                                                                process.StandardOutput.ReadToEnd());
+                        }
+                    }
+                    else
+                    {
+                        return string.Format( /*singleLine*/proverka(Path.GetFullPath(SelectedItemPath)) +
+                                                            "Date created: " + File.GetCreationTime(Path.GetFullPath(SelectedItemPath)) + "\n"+
+                                                            "Size: " + sizeConver(Path.GetFullPath(SelectedItemPath)));
                     }
 
                 /*case RequestedInfoType.Name:
                     
                     //  Return the name of the folder.
                     return string.Format("Folder '{0}'", Path.GetFileName(SelectedItemPath));*/
-                    
-                default:
 
-                    //  We won't be asked for anything else, like shortcut paths, for folders, so we 
-                    //  can return an empty string in the default case.
-                    return string.Empty;
-            }
+                    default:
+
+                        //  We won't be asked for anything else, like shortcut paths, for folders, so we 
+                        //  can return an empty string in the default case.
+                        return string.Empty;
+                }
         }
         public string sizeConver(string filePath)
         {
@@ -80,11 +122,7 @@ namespace FolderInfoTipHandler
             string fdes;
             string compname;
             string fver;
-            if (FileVersionInfo.GetVersionInfo(path).FileDescription == null)
-            {
-                fdes = null;
-            }
-            else if (FileVersionInfo.GetVersionInfo(path).FileDescription == "")
+            if (String.IsNullOrEmpty(FileVersionInfo.GetVersionInfo(path).FileDescription))
             {
                 fdes = null;
             }
@@ -92,11 +130,7 @@ namespace FolderInfoTipHandler
             {
                 fdes = "File Description: " + FileVersionInfo.GetVersionInfo(path).FileDescription + "\n";
             }
-            if (FileVersionInfo.GetVersionInfo(path).CompanyName == null)
-            {
-                compname = null;
-            }
-            else if (FileVersionInfo.GetVersionInfo(path).CompanyName == null)
+            if (String.IsNullOrEmpty(FileVersionInfo.GetVersionInfo(path).CompanyName))
             {
                 compname = null;
             }
@@ -104,11 +138,7 @@ namespace FolderInfoTipHandler
             {
                 compname = "Company: " + FileVersionInfo.GetVersionInfo(path).CompanyName + "\n";
             }
-            if (FileVersionInfo.GetVersionInfo(path).FileVersion == null)
-            {
-                fver = null;
-            }
-            else if (FileVersionInfo.GetVersionInfo(path).FileVersion == null)
+            if (String.IsNullOrEmpty(FileVersionInfo.GetVersionInfo(path).FileVersion))
             {
                 fver = null;
             }
@@ -119,4 +149,5 @@ namespace FolderInfoTipHandler
             return fdes + compname + fver;
         }
     }
+
 }
